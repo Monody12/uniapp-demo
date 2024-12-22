@@ -1,0 +1,1 @@
+<view><image src="{{a}}" mode="widthFix"></image><navigator url="../page1/page1" open-type="navigate"><button type="default">跳转到page1</button></navigator></view>
