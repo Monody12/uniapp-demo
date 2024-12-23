@@ -39,6 +39,25 @@
 	};
 	
 	const rememberPassword = ref(false);
+	
+	uni.request({
+	  url: 'http://localhost:8080/api/user/login', // 请求地址
+	  method: 'POST', // 请求方式：GET 或 POST
+	  data: {"username":"monody","password":"monody12"},
+	  header: {
+	    'Content-Type': 'application/json', // 请求头信息
+	  },
+	  success: (res) => {
+	    console.log('请求成功：', res);
+	  },
+	  fail: (err) => {
+	    console.error('请求失败：', err);
+	  },
+	  complete: () => {
+	    console.log('请求完成');
+	  },
+	});
+
 </script>
 
 <style lang="scss" scoped>
