@@ -33,6 +33,13 @@
 			{
 				"navigationBarTitleText" : "登录页示例"
 			}
+		},
+		{
+			"path" : "pages/home/home",
+			"style" : 
+			{
+				"navigationBarTitleText" : "主页"
+			}
 		}
 	],
 	"globalStyle": {

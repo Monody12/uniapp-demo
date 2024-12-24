@@ -1,7 +1,9 @@
 <script>
+	import { setupInterceptors } from './utils/request.js';
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			setupInterceptors();
 		},
 		onShow: function() {
 			console.log('App Show')

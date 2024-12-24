@@ -5,12 +5,12 @@
 		<view class="input_out">
 			<image :src="userImgUrl" class="icon"></image>
 			<view style="width: 7rpx;"></view>
-			<input class="input" placeholder="请输入用户名" />
+			<input class="input" v-model="username" placeholder="请输入用户名" />
 		</view>
 		<view class="input_out">
 			<image :src="passImgUrl" class="icon"></image>
 			<view style="width: 7rpx;"></view>
-			<input class="input" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" />
+			<input class="input" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" />
 			<text class="eye-icon" @click="togglePasswordVisibility">{{ showPassword ? '🙈' : '👁' }}</text>
 		</view>
 		<view style="height: 20rpx;"></view>
@@ -19,12 +19,13 @@
 			<text class="remember-text">记住密码</text>
 		</view>
 		<view class="button-container">
-			<button type="primary" class="button">登录</button>
+			<button type="primary" class="button" v-on:click="handleLogin()">登录</button>
 		</view>
 	</view>
 </template>
 
 <script setup>
+	import { userApi } from '@/api/user';
 	import {
 		ref
 	} from 'vue'
@@ -38,25 +39,24 @@
 		showPassword.value = !showPassword.value;
 	};
 	
+	const username = ref('')
+	const password = ref('')
 	const rememberPassword = ref(false);
 	
-	uni.request({
-	  url: 'http://localhost:8080/api/user/login', // 请求地址
-	  method: 'POST', // 请求方式：GET 或 POST
-	  data: {"username":"monody","password":"monody12"},
-	  header: {
-	    'Content-Type': 'application/json', // 请求头信息
-	  },
-	  success: (res) => {
-	    console.log('请求成功：', res);
-	  },
-	  fail: (err) => {
-	    console.error('请求失败：', err);
-	  },
-	  complete: () => {
-	    console.log('请求完成');
-	  },
-	});
+	async function handleLogin() {
+	  try {
+	    const res = await userApi.login({
+	      username: username.value,
+	      password: password.value
+	    });
+	    console.log('登录成功:', res);
+		uni.setStorageSync('token', res.data.token)
+		uni.setStorageSync('userinfo', res.data.user)
+		// TODO 跳转到主页
+	  } catch (err) {
+	    console.error('登录失败:', err);
+	  }
+	}
 
 </script>
 

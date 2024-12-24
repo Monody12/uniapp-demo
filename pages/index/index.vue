@@ -10,6 +10,9 @@
 		<navigator url="../login/login" open-type="navigate">
 			<button type="default">跳转到登录页</button>
 		</navigator>
+		<navigator url="../home/home" open-type="navigate">
+			<button type="default">跳转到主页</button>
+		</navigator>
 	</view>
 </template>
 
