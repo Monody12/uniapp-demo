@@ -199,7 +199,6 @@
 
 
 	.function_selector {
-		background-color: gold;
 		background-color: paleturquoise;
 		width: 100%;
 		height: 100rpx;
@@ -210,7 +209,6 @@
 	}
 
 	.file_top {
-		background-color: green;
 		background-color: aliceblue;
 		display: flex;
 		width: 100%;
@@ -219,7 +217,6 @@
 	}
 
 	.file_list {
-		background-color: yellow;
 		background-color: lemonchiffon;
 		display: flex;
 		flex-direction: column;
