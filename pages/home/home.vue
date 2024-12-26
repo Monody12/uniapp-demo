@@ -12,7 +12,7 @@
 		</view>
 		<view class="file_top">
 			<view style="margin: 30rpx;">名称（升序）</view>
-			<image :src="gridIconUrl" class="icon"  style="margin-right: 30rpx;"></image>
+			<image :src="gridIconUrl" class="icon" style="margin-right: 30rpx;"></image>
 		</view>
 		<view class="file_list">
 			<view class="file_display">
@@ -32,22 +32,28 @@
 				<image :src="moreIconUrl" class="icon"></image>
 			</view>
 		</view>
+		<button class="add_button" v-on:click="openPopup">新增</button>
+		<uni-popup ref="popupRef" type="bottom" border-radius="10px 10px 0 0">底部弹出 Popup 自定义圆角</uni-popup>
 	</view>
 </template>
 
 <script setup>
+
 	import {
 		ref,
 		reactive
 	} from 'vue'
 
-	const menuImgUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=643'
-	const listIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=648'
-	const gridIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=647'
-	const folderIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=649'
-	const fileIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=650'
-	const moreIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=651'
-	
+	const menuImgUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true'
+	const listIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true'
+	const gridIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true'
+	const folderIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true'
+	const fileIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true'
+	const moreIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
+
+	// 声明ref用于获取popup组件实例
+	const popupRef = ref()
+
 	const fileInfo = ref([{
 			"userId": 1,
 			"parentId": null,
@@ -126,10 +132,29 @@
 			"deleteFlag": false
 		}
 	])
+
+	function openPopup() {
+		console.log(popupRef.value)
+		// debugger
+		// 通过组件定义的ref调用uni-popup方法 ,如果传入参数 ，type 属性将失效 ，仅支持 ['top','left','bottom','right','center']
+		popupRef.value.open('bottom')
+
+	}
+	
+	const message = ref(null)  
+	    const msgType = ref('')  
+	    const messageText = ref('')  
+	
+
+	    function messageToggle(type) {  
+	        msgType.value = type  
+	        messageText.value = `这是一条${type}消息提示`  
+	        // this.$refs.message.open()  
+	        message.value.open()  
+	    }  
 </script>
 
 <style scoped lang="scss">
-
 	.app_out {
 		display: flex;
 		/* 纵向排列 */
@@ -141,7 +166,7 @@
 		margin: 0 auto;
 		padding: 0;
 		// 全屏布局 
-		height: 100%; 
+		height: 100%;
 		position: absolute;
 		width: 100%;
 		top: 0;
@@ -182,7 +207,7 @@
 		justify-content: space-around;
 		align-items: center;
 	}
-	
+
 	.file_top {
 		background-color: green;
 		display: flex;
@@ -190,35 +215,49 @@
 		justify-content: space-between;
 		align-items: center;
 	}
-	
+
 	.file_list {
 		background-color: yellow;
 		display: flex;
 		flex-direction: column;
 		width: 100%;
 		height: 100%;
-		
+
 		// 滚动
 		flex: 1;
 		overflow-y: auto;
 	}
-	
+
 	.file_display {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		width: 100%;
-		
+
 		box-sizing: border-box; // 避免添加padding后最右侧元素被移出屏幕右侧
 		padding: 20rpx;
-		  gap: 20rpx; // 添加元素间距
-		
+		gap: 20rpx; // 添加元素间距
+
 		.file_display_info {
 			display: flex;
 			flex-direction: column;
 			flex: 1; // 占据剩余空间
 			gap: 10rpx; // 文本间距
 		}
-		
+
+	}
+
+	.add_button {
+		position: fixed;
+		bottom: 75rpx;
+		right: 75rpx;
+		z-index: 1000; // 确保浮于顶部
+		background-color: #ebebeb;
+		color: black;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 10rpx;
+		box-shadow: 0 14rpx 16rpx rgba(0, 0, 0, 0.2);
+		// cursor: pointer;
 	}
 </style>
