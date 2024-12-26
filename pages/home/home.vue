@@ -200,6 +200,7 @@
 
 	.function_selector {
 		background-color: gold;
+		background-color: paleturquoise;
 		width: 100%;
 		height: 100rpx;
 		display: flex;
@@ -210,6 +211,7 @@
 
 	.file_top {
 		background-color: green;
+		background-color: aliceblue;
 		display: flex;
 		width: 100%;
 		justify-content: space-between;
@@ -218,6 +220,7 @@
 
 	.file_list {
 		background-color: yellow;
+		background-color: lemonchiffon;
 		display: flex;
 		flex-direction: column;
 		width: 100%;
