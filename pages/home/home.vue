@@ -2,7 +2,7 @@
 	<view class="app_out">
 		<view class="input_out">
 			<view style="width: 15rpx;"></view>
-			<image :src="menuImgUrl" class="icon"></image>
+			<image :src="imageUrls.menuImg" class="icon"></image>
 			<view style="width: 15rpx;"></view>
 			<input class="input" placeholder="搜索我的个人网盘" />
 		</view>
@@ -12,28 +12,39 @@
 		</view>
 		<view class="file_top">
 			<view style="margin: 30rpx;">名称（升序）</view>
-			<image :src="gridIconUrl" class="icon" style="margin-right: 30rpx;"></image>
+			<image :src="imageUrls.gridIcon" class="icon" style="margin-right: 30rpx;"></image>
 		</view>
 		<view class="file_list">
 			<view class="file_display">
-				<image :src="folderIconUrl" class="icon"></image>
+				<image :src="imageUrls.folderIcon" class="icon"></image>
 				<view class="file_display_info">
 					<text>这是一个文件夹</text>
 					<text>修改时间：9月13日</text>
 				</view>
-				<image :src="moreIconUrl" class="icon"></image>
+				<image :src="imageUrls.moreIcon" class="icon"></image>
 			</view>
 			<view class="file_display">
-				<image :src="fileIconUrl" class="icon"></image>
+				<image :src="imageUrls.fileIcon" class="icon"></image>
 				<view class="file_display_info">
 					<text>这是一个文件</text>
 					<text>修改时间：10月13日</text>
 				</view>
-				<image :src="moreIconUrl" class="icon"></image>
+				<image :src="imageUrls.moreIcon" class="icon"></image>
 			</view>
 		</view>
 		<button class="add_button" v-on:click="openPopup">新增</button>
-		<uni-popup ref="popupRef" type="bottom" border-radius="10px 10px 0 0">底部弹出 Popup 自定义圆角</uni-popup>
+		<uni-popup ref="popupRef" type="bottom" border-radius="10px 10px 0 0">
+			<view class="add_container">
+				<view class="add_content">
+					<image :src="imageUrls.folderIcon" class="icon_big"></image>
+					<text>文件夹</text>
+				</view>
+				<view class="add_content">
+					<image :src="imageUrls.fileIcon" class="icon_big"></image>
+					<text>上传</text>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -44,12 +55,14 @@
 		reactive
 	} from 'vue'
 
-	const menuImgUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true'
-	const listIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true'
-	const gridIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true'
-	const folderIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true'
-	const fileIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true'
-	const moreIconUrl = 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
+	const imageUrls = {
+	  menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
+	  listIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true',
+	  gridIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true',
+	  folderIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true',
+	  fileIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true',
+	  moreIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
+	}
 
 	// 声明ref用于获取popup组件实例
 	const popupRef = ref()
@@ -187,6 +200,11 @@
 		height: 48rpx;
 		width: 48rpx;
 	}
+	
+	.icon_big {
+		height: 96rpx;
+		width: 96rpx;
+	}
 
 	.input {
 		flex: 1;
@@ -251,7 +269,7 @@
 		position: fixed;
 		bottom: 75rpx;
 		right: 75rpx;
-		z-index: 1000; // 确保浮于顶部
+		z-index: 10; // 浮于顶部
 		background-color: #ebebeb;
 		color: black;
 		border: none;
@@ -259,5 +277,31 @@
 		border-radius: 10rpx;
 		box-shadow: 0 14rpx 16rpx rgba(0, 0, 0, 0.2);
 		// cursor: pointer;
+	}
+	
+	.add_container {
+		z-index: 11;
+		background-color: whitesmoke;
+		border-radius: 30rpx 30rpx 0 0;
+		height: auto;
+		
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-around;
+		align-content: center;
+		
+		.add_content {
+			background-color: silver;
+			height: auto;
+			width: auto;
+			border-radius: 10rpx;
+			margin: 50rpx;
+			
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
 	}
 </style>
