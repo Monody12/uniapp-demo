@@ -15,33 +15,39 @@
 			<image :src="imageUrls.gridIcon" class="icon" style="margin-right: 30rpx;"></image>
 		</view>
 		<view class="file_list">
-			<view class="file_display">
-				<image :src="imageUrls.folderIcon" class="icon"></image>
-				<view class="file_display_info">
-					<text>这是一个文件夹</text>
-					<text>修改时间：9月13日</text>
+			<template v-for="item in fileInfo" key="item.id">
+				<view class="file_display">
+					<image :src="item.isFolder ? imageUrls.folderIcon : imageUrls.fileIcon" class="icon"></image>
+					<view class="file_display_info">
+						<text style="font-size: 1.1rem;">{{item.name}}</text>
+						<text>修改时间：{{item.updatedAt.replace('T', ' ')}}</text>
+					</view>
+					<image :src="imageUrls.moreIcon" class="icon"></image>
 				</view>
-				<image :src="imageUrls.moreIcon" class="icon"></image>
-			</view>
-			<view class="file_display">
-				<image :src="imageUrls.fileIcon" class="icon"></image>
-				<view class="file_display_info">
-					<text>这是一个文件</text>
-					<text>修改时间：10月13日</text>
-				</view>
-				<image :src="imageUrls.moreIcon" class="icon"></image>
-			</view>
+			</template>
 		</view>
 		<button class="add_button" v-on:click="openPopup">新增</button>
-		<uni-popup ref="popupRef" type="bottom" border-radius="10px 10px 0 0">
+		<uni-popup ref="addPopRef" type="bottom" border-radius="10px 10px 0 0">
 			<view class="add_container">
 				<view class="add_content">
 					<image :src="imageUrls.folderIcon" class="icon_big"></image>
 					<text>文件夹</text>
 				</view>
-				<view class="add_content">
+				<view class="add_content" v-on:click="clickUpload">
 					<image :src="imageUrls.fileIcon" class="icon_big"></image>
 					<text>上传</text>
+				</view>
+			</view>
+		</uni-popup>
+		<!-- 文件上传弹出层 -->
+		<uni-popup ref="uploadPopRef" type="center">
+			<view class="upload_content">
+				<text class="upload_title">上传文件</text>
+				<view class="upload_picker_container">
+					<view class="upload_picker_container">
+						<uni-file-picker limit="200" v-model="imageValue" fileMediatype="image" mode="grid"
+							:autoUpload="true" @select="select" @progress="progress" @success="success" @fail="fail" />
+					</view>
 				</view>
 			</view>
 		</uni-popup>
@@ -49,23 +55,23 @@
 </template>
 
 <script setup>
-
 	import {
 		ref,
 		reactive
 	} from 'vue'
 
 	const imageUrls = {
-	  menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
-	  listIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true',
-	  gridIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true',
-	  folderIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true',
-	  fileIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true',
-	  moreIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
+		menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
+		listIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true',
+		gridIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true',
+		folderIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true',
+		fileIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true',
+		moreIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
 	}
 
 	// 声明ref用于获取popup组件实例
-	const popupRef = ref()
+	const addPopRef = ref()
+	const uploadPopRef = ref()
 
 	const fileInfo = ref([{
 			"userId": 1,
@@ -76,7 +82,8 @@
 			"id": 10000000026,
 			"createdAt": "2024-07-25T22:57:04",
 			"updatedAt": "2024-07-27T11:55:07",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -87,7 +94,8 @@
 			"id": 10000000028,
 			"createdAt": "2024-07-28T22:24:03",
 			"updatedAt": "2024-07-28T22:24:03",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -98,7 +106,8 @@
 			"id": 10000000029,
 			"createdAt": "2024-07-30T10:16:24",
 			"updatedAt": "2024-07-30T10:16:24",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -109,7 +118,8 @@
 			"id": 10000000035,
 			"createdAt": "2024-08-07T20:15:43",
 			"updatedAt": "2024-08-07T20:15:43",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -120,7 +130,8 @@
 			"id": 10000000036,
 			"createdAt": "2024-08-17T19:49:28",
 			"updatedAt": "2024-08-17T19:49:28",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -131,7 +142,8 @@
 			"id": 10000000044,
 			"createdAt": "2024-12-22T19:57:11",
 			"updatedAt": "2024-12-22T19:57:11",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
 		},
 		{
 			"userId": 1,
@@ -142,29 +154,100 @@
 			"id": 10000000045,
 			"createdAt": "2024-12-24T08:58:54",
 			"updatedAt": "2024-12-24T08:58:54",
-			"deleteFlag": false
+			"deleteFlag": false,
+			"isFolder": true
+		},
+		{
+			"userId": 1,
+			"parentId": null,
+			"description": null,
+			"publicFlag": false,
+			"name": "大巴APP",
+			"id": 10000000046,
+			"createdAt": "2024-12-27T10:36:02",
+			"updatedAt": "2024-12-27T10:36:02",
+			"deleteFlag": false,
+			"isFolder": true
+		},
+		{
+			"userId": 1,
+			"folderId": null,
+			"name": "微信图片_20241130054736.jpg",
+			"publicFlag": false,
+			"description": null,
+			"pathName": "/2024/12/24/1b4f1e99754b489d9480a72ac4004f45",
+			"size": 173781,
+			"mimeType": "image/jpeg",
+			"id": 642,
+			"createdAt": "2024-12-24T21:45:37",
+			"updatedAt": "2024-12-24T21:45:37",
+			"deleteFlag": false,
+			"isFolder": false
 		}
 	])
 
 	function openPopup() {
-		console.log(popupRef.value)
+		console.log(addPopRef.value)
 		// debugger
 		// 通过组件定义的ref调用uni-popup方法 ,如果传入参数 ，type 属性将失效 ，仅支持 ['top','left','bottom','right','center']
-		popupRef.value.open('bottom')
-
+		addPopRef.value.open('bottom')
 	}
-	
-	const message = ref(null)  
-	    const msgType = ref('')  
-	    const messageText = ref('')  
-	
 
-	    function messageToggle(type) {  
-	        msgType.value = type  
-	        messageText.value = `这是一条${type}消息提示`  
-	        // this.$refs.message.open()  
-	        message.value.open()  
-	    }  
+	// 上传文件相关函数
+	const image_style = {
+		"height": 600, // 边框高度
+		"width": 600, // 边框宽度
+		"border": { // 如果为 Boolean 值，可以控制边框显示与否
+			"color": "#eee", // 边框颜色
+			"width": "1px", // 边框宽度
+			"style": "solid", // 边框样式
+			"radius": "50%" // 边框圆角，支持百分比
+		}
+	}
+
+	// 上传相关逻辑
+	const imageValue = ref([])
+	const uploadForm = reactive({
+		folderId: null,
+		publicFlag: true
+	})
+
+	// 点击上传按钮
+	function clickUpload() {
+		addPopRef.value.close()
+		uploadPopRef.value.open()
+	}
+
+	// 获取上传状态
+	function select(e) {
+		console.log('选择文件：', e)
+		uni.uploadFile({
+			url: 'https://www.dluserver.cn:8080/api/upload', //仅为示例，非真实的接口地址
+			header: {
+				'authorization' : uni.getStorageSync('token')
+			},
+			filePath: e.tempFilePaths[0],
+			name: 'file',
+			formData: uploadForm.value,
+			success: (uploadFileRes) => {
+				console.log(uploadFileRes.data);
+			}
+		});
+	}
+	// 获取上传进度
+	function progress(e) {
+		console.log('上传进度：', e)
+	}
+
+	// 上传成功
+	function success(e) {
+		console.log('上传成功')
+	}
+
+	// 上传失败
+	function fail(e) {
+		console.log('上传失败：', e)
+	}
 </script>
 
 <style scoped lang="scss">
@@ -200,7 +283,7 @@
 		height: 48rpx;
 		width: 48rpx;
 	}
-	
+
 	.icon_big {
 		height: 96rpx;
 		width: 96rpx;
@@ -278,30 +361,66 @@
 		box-shadow: 0 14rpx 16rpx rgba(0, 0, 0, 0.2);
 		// cursor: pointer;
 	}
-	
+
 	.add_container {
 		z-index: 11;
 		background-color: whitesmoke;
 		border-radius: 30rpx 30rpx 0 0;
 		height: auto;
-		
+
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
 		justify-content: space-around;
 		align-content: center;
-		
+
 		.add_content {
 			background-color: silver;
 			height: auto;
 			width: auto;
 			border-radius: 10rpx;
 			margin: 50rpx;
-			
+
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 			align-items: center;
 		}
+	}
+
+	// 文件上传CSS
+	.upload_content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background-color: #fff;
+		padding: 30rpx;
+		width: 80vw;
+		/* 设置弹窗宽度 */
+		max-height: 80vh;
+		/* 设置弹窗最大高度 */
+	}
+
+	.upload_title {
+		margin-bottom: 20rpx;
+	}
+
+	.upload_picker_container {
+		width: 100%;
+		height: 60vh;
+		/* 设置固定高度 */
+		overflow-y: auto;
+		/* 允许垂直滚动 */
+		margin-bottom: 20rpx;
+	}
+
+	/* 优化滚动条样式 */
+	.upload_picker_container::-webkit-scrollbar {
+		width: 6rpx;
+	}
+
+	.upload_picker_container::-webkit-scrollbar-thumb {
+		background-color: #ddd;
+		border-radius: 3rpx;
 	}
 </style>
