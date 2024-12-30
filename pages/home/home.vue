@@ -16,7 +16,7 @@
 		</view>
 		<view class="file_list">
 			<template v-for="item in fileInfo" key="item.id">
-				<view class="file_display">
+				<view class="file_display" v-on:click="openFile(item)">
 					<image :src="item.isFolder ? imageUrls.folderIcon : imageUrls.fileIcon" class="icon"></image>
 					<view class="file_display_info">
 						<text style="font-size: 1.1rem;">{{item.name}}</text>
@@ -46,7 +46,8 @@
 				<view class="upload_picker_container">
 					<view class="upload_picker_container">
 						<uni-file-picker limit="200" v-model="imageValue" fileMediatype="image" mode="grid"
-							:autoUpload="true" @select="select" @progress="progress" @success="success" @fail="fail" />
+							:autoUpload="true" @select="select" @progress="progress" 
+							@success="success" @fail="fail" @delete="deleteFile"/>
 					</view>
 				</view>
 			</view>
@@ -57,8 +58,10 @@
 <script setup>
 	import {
 		ref,
-		reactive
+		reactive,
+		onMounted
 	} from 'vue'
+	import { folderApi } from '@/api/folder.js'
 
 	const imageUrls = {
 		menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
@@ -69,126 +72,19 @@
 		moreIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
 	}
 
+	// 生命周期时间
+	onMounted(()=>{
+		getFileList()
+	})
+
 	// 声明ref用于获取popup组件实例
 	const addPopRef = ref()
 	const uploadPopRef = ref()
 
-	const fileInfo = ref([{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "wg",
-			"id": 10000000026,
-			"createdAt": "2024-07-25T22:57:04",
-			"updatedAt": "2024-07-27T11:55:07",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "文档",
-			"id": 10000000028,
-			"createdAt": "2024-07-28T22:24:03",
-			"updatedAt": "2024-07-28T22:24:03",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "音视频",
-			"id": 10000000029,
-			"createdAt": "2024-07-30T10:16:24",
-			"updatedAt": "2024-07-30T10:16:24",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "软件",
-			"id": 10000000035,
-			"createdAt": "2024-08-07T20:15:43",
-			"updatedAt": "2024-08-07T20:15:43",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "图片",
-			"id": 10000000036,
-			"createdAt": "2024-08-17T19:49:28",
-			"updatedAt": "2024-08-17T19:49:28",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "网盘app",
-			"id": 10000000044,
-			"createdAt": "2024-12-22T19:57:11",
-			"updatedAt": "2024-12-22T19:57:11",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "临时",
-			"id": 10000000045,
-			"createdAt": "2024-12-24T08:58:54",
-			"updatedAt": "2024-12-24T08:58:54",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"parentId": null,
-			"description": null,
-			"publicFlag": false,
-			"name": "大巴APP",
-			"id": 10000000046,
-			"createdAt": "2024-12-27T10:36:02",
-			"updatedAt": "2024-12-27T10:36:02",
-			"deleteFlag": false,
-			"isFolder": true
-		},
-		{
-			"userId": 1,
-			"folderId": null,
-			"name": "微信图片_20241130054736.jpg",
-			"publicFlag": false,
-			"description": null,
-			"pathName": "/2024/12/24/1b4f1e99754b489d9480a72ac4004f45",
-			"size": 173781,
-			"mimeType": "image/jpeg",
-			"id": 642,
-			"createdAt": "2024-12-24T21:45:37",
-			"updatedAt": "2024-12-24T21:45:37",
-			"deleteFlag": false,
-			"isFolder": false
-		}
-	])
+	const fileInfo = ref([])
 
 	function openPopup() {
 		console.log(addPopRef.value)
-		// debugger
 		// 通过组件定义的ref调用uni-popup方法 ,如果传入参数 ，type 属性将失效 ，仅支持 ['top','left','bottom','right','center']
 		addPopRef.value.open('bottom')
 	}
@@ -217,18 +113,32 @@
 		addPopRef.value.close()
 		uploadPopRef.value.open()
 	}
+	// 将对象转换为 FormData
+	function objectToFormData(obj) {
+		const formData = new FormData();
+		for (const key in obj) {
+			if (obj.hasOwnProperty(key)) {
+				formData.append(key, obj[key]);
+			}
+		}
+		return formData;
+	}
 
 	// 获取上传状态
 	function select(e) {
 		console.log('选择文件：', e)
+		// 
 		uni.uploadFile({
 			url: 'https://www.dluserver.cn:8080/api/upload', //仅为示例，非真实的接口地址
 			header: {
-				'authorization' : uni.getStorageSync('token')
+				'authorization': uni.getStorageSync('token')
 			},
 			filePath: e.tempFilePaths[0],
-			name: 'file',
-			formData: uploadForm.value,
+			name: 'files',
+			formData: {
+		folderId: null,
+		publicFlag: true
+	},
 			success: (uploadFileRes) => {
 				console.log(uploadFileRes.data);
 			}
@@ -247,6 +157,40 @@
 	// 上传失败
 	function fail(e) {
 		console.log('上传失败：', e)
+	}
+	
+	// 删除
+	function deleteFile(e) {
+		console.log('删除文件', e)
+	}
+	
+	// 请求文件信息
+	async function getFileList() {
+		try {
+			const res = await folderApi.getFolder(null)
+			fileInfo.value = res.data
+			console.log('获取文件列表', res)
+		} catch (err) {
+			console.log('获取文件列表失败：', err)
+		}
+	}
+	
+	// 打开文件
+	function openFile(f) {
+		console.log('打开文件(夹)', f)
+		if (f.isFolder) {
+			
+		} else {
+			
+		}
+	}
+	
+	function browseFile(id, publicFlag, preview) {
+		if (publicFlag) {
+			
+		} else {
+			
+		}
 	}
 </script>
 
