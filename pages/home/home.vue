@@ -62,6 +62,8 @@
 		onMounted
 	} from 'vue'
 	import { folderApi } from '@/api/folder.js'
+	import { fileApi } from '@/api/file.js'
+	import { HOST_URL, BASE_URL, FILE_URL } from '@/constants/config.js'
 
 	const imageUrls = {
 		menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
@@ -86,7 +88,7 @@
 	function openPopup() {
 		console.log(addPopRef.value)
 		// 通过组件定义的ref调用uni-popup方法 ,如果传入参数 ，type 属性将失效 ，仅支持 ['top','left','bottom','right','center']
-		addPopRef.value.open('bottom')
+		addPopRef.value.open()
 	}
 
 	// 上传文件相关函数
@@ -129,7 +131,7 @@
 		console.log('选择文件：', e)
 		// 
 		uni.uploadFile({
-			url: 'https://www.dluserver.cn:8080/api/upload', //仅为示例，非真实的接口地址
+			url: BASE_URL + '/upload', //仅为示例，非真实的接口地址
 			header: {
 				'authorization': uni.getStorageSync('token')
 			},
@@ -175,21 +177,36 @@
 		}
 	}
 	
-	// 打开文件
-	function openFile(f) {
+	// 打开文件（点击文件操作）
+	async function openFile(f) {
 		console.log('打开文件(夹)', f)
 		if (f.isFolder) {
 			
 		} else {
-			
+			browseFile(f)
 		}
 	}
 	
-	function browseFile(id, publicFlag, preview) {
+	/**
+	 * 执行预览操作
+	 */
+	async function browseFile(f) {
+		const fileUrl = await getFileUrl(f.id, f.publicFlag, true)
+		uni.navigateTo({
+			url: `/pages/file-preview/file-preview?fileUrl=${encodeURIComponent(fileUrl)}&fileType=image&fileName=${encodeURIComponent(f.name)}`
+		})
+	}
+	
+	/**
+	 * 获取文件链接
+	 */
+	async function getFileUrl(id, publicFlag, preview) {
 		if (publicFlag) {
-			
+			return `${FILE_URL}?fileId=${id}&preview=${preview}` 
 		} else {
-			
+			const token = await fileApi.getToken(id)
+			console.log(token.data)
+			return HOST_URL + token.data[0]
 		}
 	}
 </script>

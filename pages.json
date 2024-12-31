@@ -40,6 +40,13 @@
 			{
 				"navigationBarTitleText" : "主页"
 			}
+		},
+		{
+			"path" : "pages/file-preview/file-preview",
+			"style" : 
+			{
+				"navigationBarTitleText" : "文件预览"
+			}
 		}
 	],
 	"globalStyle": {
