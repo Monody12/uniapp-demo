@@ -15,7 +15,7 @@
 		</view>
 		<view style="height: 20rpx;"></view>
 		<view class="remember-password">
-			<checkbox v-model="rememberPassword" class="checkbox" />
+			<checkbox :checked="rememberPassword" class="checkbox" />
 			<text class="remember-text">记住密码</text>
 		</view>
 		<view class="button-container">
