@@ -2,7 +2,7 @@
 	<view class="app_out">
 		<view class="input_out">
 			<view style="width: 15rpx;"></view>
-			<image :src="imageUrls.menuImg" class="icon"></image>
+			<image :src="IMAGE_URLS.menuImg" class="icon"></image>
 			<view style="width: 15rpx;"></view>
 			<input class="input" placeholder="搜索我的个人网盘" />
 		</view>
@@ -12,29 +12,29 @@
 		</view>
 		<view class="file_top">
 			<view style="margin: 30rpx;">名称（升序）</view>
-			<image :src="imageUrls.gridIcon" class="icon" style="margin-right: 30rpx;"></image>
+			<image :src="IMAGE_URLS.gridIcon" class="icon" style="margin-right: 30rpx;"></image>
 		</view>
 		<view class="file_list">
 			<template v-for="item in fileInfo" key="item.id">
 				<view class="file_display" v-on:click="openFile(item)">
-					<image :src="item.isFolder ? imageUrls.folderIcon : imageUrls.fileIcon" class="icon"></image>
+					<image :src="item.isFolder ? IMAGE_URLS.folderIcon : IMAGE_URLS.fileIcon" class="icon"></image>
 					<view class="file_display_info">
 						<text style="font-size: 1.1rem;">{{item.name}}</text>
 						<text>修改时间：{{item.updatedAt.replace('T', ' ')}}</text>
 					</view>
-					<image :src="imageUrls.moreIcon" class="icon"></image>
+					<image :src="IMAGE_URLS.moreIcon" class="icon"></image>
 				</view>
 			</template>
 		</view>
 		<button class="add_button" v-on:click="openPopup">新增</button>
 		<uni-popup ref="addPopRef" type="bottom" border-radius="10px 10px 0 0">
 			<view class="add_container">
-				<view class="add_content">
-					<image :src="imageUrls.folderIcon" class="icon_big"></image>
+				<view class="add_content" v-on:click="createFolderPopRef.open()">
+					<image :src="IMAGE_URLS.folderIcon" class="icon_big"></image>
 					<text>文件夹</text>
 				</view>
 				<view class="add_content" v-on:click="clickUpload">
-					<image :src="imageUrls.fileIcon" class="icon_big"></image>
+					<image :src="IMAGE_URLS.fileIcon" class="icon_big"></image>
 					<text>上传</text>
 				</view>
 			</view>
@@ -46,11 +46,16 @@
 				<view class="upload_picker_container">
 					<view class="upload_picker_container">
 						<uni-file-picker limit="200" v-model="imageValue" fileMediatype="image" mode="grid"
-							:autoUpload="true" @select="select" @progress="progress" 
-							@success="success" @fail="fail" @delete="deleteFile"/>
+							:autoUpload="true" @select="select" @progress="progress" @success="success" @fail="fail"
+							@delete="deleteFile" />
 					</view>
 				</view>
 			</view>
+		</uni-popup>
+		<!-- 新建文件夹弹出层 -->
+		<uni-popup ref="createFolderPopRef" type="center">
+			<uni-popup-dialog mode="input" title="新建文件夹" value="" placeholder="请输入文件夹名称"
+				@confirm="createFolderConfirm"></uni-popup-dialog>
 		</uni-popup>
 	</view>
 </template>
@@ -59,31 +64,43 @@
 	import {
 		ref,
 		reactive,
-		onMounted
+		onMounted,
+		defineProps
 	} from 'vue'
-	import { folderApi } from '@/api/folder.js'
-	import { fileApi } from '@/api/file.js'
-	import { HOST_URL, BASE_URL, FILE_URL } from '@/constants/config.js'
+	import {
+		folderApi
+	} from '@/api/folder.js'
+	import {
+		fileApi
+	} from '@/api/file.js'
+	import {
+		HOST_URL,
+		BASE_URL,
+		FILE_URL,
+		IMAGE_URLS
+	} from '@/constants/config.js'
 
-	const imageUrls = {
-		menuImg: 'https://www.dluserver.cn:8080/api/files/download?fileId=643&preview=true',
-		listIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=648&preview=true',
-		gridIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=647&preview=true',
-		folderIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=649&preview=true',
-		fileIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=650&preview=true',
-		moreIcon: 'https://www.dluserver.cn:8080/api/files/download?fileId=651&preview=true'
-	}
+	// 头参数
+	const props = defineProps({
+		folderId: {
+			type: [Number, String],
+			required: false,
+			default: null
+		}
+	})
 
 	// 生命周期时间
-	onMounted(()=>{
+	onMounted(() => {
 		getFileList()
 	})
 
 	// 声明ref用于获取popup组件实例
 	const addPopRef = ref()
 	const uploadPopRef = ref()
+	const createFolderPopRef = ref()
 
 	const fileInfo = ref([])
+	const parentId = ref(null)
 
 	function openPopup() {
 		console.log(addPopRef.value)
@@ -91,24 +108,8 @@
 		addPopRef.value.open()
 	}
 
-	// 上传文件相关函数
-	const image_style = {
-		"height": 600, // 边框高度
-		"width": 600, // 边框宽度
-		"border": { // 如果为 Boolean 值，可以控制边框显示与否
-			"color": "#eee", // 边框颜色
-			"width": "1px", // 边框宽度
-			"style": "solid", // 边框样式
-			"radius": "50%" // 边框圆角，支持百分比
-		}
-	}
-
 	// 上传相关逻辑
 	const imageValue = ref([])
-	const uploadForm = reactive({
-		folderId: null,
-		publicFlag: true
-	})
 
 	// 点击上传按钮
 	function clickUpload() {
@@ -128,19 +129,17 @@
 
 	// 获取上传状态
 	function select(e) {
-		console.log('选择文件：', e)
-		// 
 		uni.uploadFile({
-			url: BASE_URL + '/upload', //仅为示例，非真实的接口地址
+			url: BASE_URL + '/upload',
 			header: {
 				'authorization': uni.getStorageSync('token')
 			},
 			filePath: e.tempFilePaths[0],
 			name: 'files',
 			formData: {
-		folderId: null,
-		publicFlag: true
-	},
+				folderId: props.folderId,
+				publicFlag: false
+			},
 			success: (uploadFileRes) => {
 				console.log(uploadFileRes.data);
 			}
@@ -160,54 +159,71 @@
 	function fail(e) {
 		console.log('上传失败：', e)
 	}
-	
+
 	// 删除
 	function deleteFile(e) {
 		console.log('删除文件', e)
 	}
-	
+
 	// 请求文件信息
 	async function getFileList() {
 		try {
-			const res = await folderApi.getFolder(null)
+			const res = await folderApi.getFolder(props.folderId)
 			fileInfo.value = res.data
 			console.log('获取文件列表', res)
 		} catch (err) {
 			console.log('获取文件列表失败：', err)
 		}
 	}
-	
+
 	// 打开文件（点击文件操作）
 	async function openFile(f) {
 		console.log('打开文件(夹)', f)
 		if (f.isFolder) {
-			
+			uni.navigateTo({
+				url: `/pages/home/home?folderId=${f.id}`
+			})
 		} else {
 			browseFile(f)
 		}
 	}
-	
+
 	/**
 	 * 执行预览操作
 	 */
 	async function browseFile(f) {
 		const fileUrl = await getFileUrl(f.id, f.publicFlag, true)
 		uni.navigateTo({
-			url: `/pages/file-preview/file-preview?fileUrl=${encodeURIComponent(fileUrl)}&fileType=image&fileName=${encodeURIComponent(f.name)}`
+			url: `/pages/file-preview/file-preview?fileUrl=${encodeURIComponent(fileUrl)}&fileType=${f.mimeType}&fileName=${encodeURIComponent(f.name)}`
 		})
 	}
-	
+
 	/**
 	 * 获取文件链接
 	 */
 	async function getFileUrl(id, publicFlag, preview) {
 		if (publicFlag) {
-			return `${FILE_URL}?fileId=${id}&preview=${preview}` 
+			return `${FILE_URL}?fileId=${id}&preview=${preview}`
 		} else {
 			const token = await fileApi.getToken(id)
 			console.log(token.data)
 			return HOST_URL + token.data[0]
 		}
+	}
+
+	// 新建文件夹确认
+	async function createFolderConfirm(val) {
+		const res = await folderApi.createFolder(props.folderId, val)
+		if(res.code == 200) {
+			uni.showToast({
+			  title: `${val} 创建成功`,
+			  icon: 'success',
+			  duration: 2000
+			});
+			// 将新添加的文件放置到首位
+			fileInfo.value.unshift(res.data)
+		}
+		addPopRef.value.close()
 	}
 </script>
 
