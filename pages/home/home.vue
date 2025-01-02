@@ -22,7 +22,7 @@
 						<text style="font-size: 1.1rem;">{{item.name}}</text>
 						<text>修改时间：{{item.updatedAt.replace('T', ' ')}}</text>
 					</view>
-					<image :src="IMAGE_URLS.moreIcon" class="icon"></image>
+					<image :src="IMAGE_URLS.moreIcon" class="icon" v-on:click.stop="clickMoreIcon(item)"></image>
 				</view>
 			</template>
 		</view>
@@ -57,6 +57,13 @@
 			<uni-popup-dialog mode="input" title="新建文件夹" value="" placeholder="请输入文件夹名称"
 				@confirm="createFolderConfirm"></uni-popup-dialog>
 		</uni-popup>
+		<!-- 删除文件确认弹出层 -->
+		<uni-popup ref="alertDialogRef" type="dialog">
+			<uni-popup-dialog :type="dialogMsgType" cancelText="取消" confirmText="确认" title="通知"
+			:content="dialogContent" @confirm="dialogConfirm" 
+								@close="dialogClose"></uni-popup-dialog>
+		</uni-popup>
+		
 	</view>
 </template>
 
@@ -98,10 +105,18 @@
 	const addPopRef = ref()
 	const uploadPopRef = ref()
 	const createFolderPopRef = ref()
+	const alertDialogRef = ref()
 
 	const fileInfo = ref([])
 	const parentId = ref(null)
-
+	
+	// 确认弹窗
+	const dialogMsgType = ref()
+	const dialogContent = ref()
+	function dialogClose() {
+		
+	}
+	
 	function openPopup() {
 		console.log(addPopRef.value)
 		// 通过组件定义的ref调用uni-popup方法 ,如果传入参数 ，type 属性将失效 ，仅支持 ['top','left','bottom','right','center']
@@ -224,6 +239,41 @@
 			fileInfo.value.unshift(res.data)
 		}
 		addPopRef.value.close()
+	}
+	// 点击更多按钮
+	function clickMoreIcon(f) {
+		clickFile.value = f
+		console.log('clickMoreIcon', f)
+		deleteFileFun()
+	}
+	
+	// 删除文件
+	const clickFile = ref()
+	function deleteFileFun() {
+		var f = clickFile.value
+		dialogMsgType.value = 'warn'
+		dialogContent.value = `确认要删除 ${f.name} 吗？`
+		alertDialogRef.value.open('center')
+	}
+	async function deleteFileAndFolder(files) {
+		var folderIdList = [], fileIdList = []
+		for (let f of files) {
+			if(f.isFolder) folderIdList.push(f.id)
+			else fileIdList.push(f.id)
+		}
+		try {
+			const res = await folderApi.deleteFileAndFolder(fileIdList, folderIdList)
+			if(res.code == 200) {
+				uni.showToast({
+				  title: res.msg,
+				  icon: 'success',
+				  duration: 2000
+				})
+			}
+			getFileList()
+		} catch(err) {
+			console.error('删除文件失败', res.err)
+		}
 	}
 </script>
 

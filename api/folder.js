@@ -9,6 +9,13 @@ export const folderApi = {
 		})
 	},
 
+	deleteFileAndFolder: (fileIdList, folderIdList) => {
+		return http.delete('/folder', {
+			folderIdList : folderIdList,
+			fileIdList: fileIdList
+		})
+	},
+
 	createFolder: (parentId, folderName) => {
 		return http.post('/folder', {
 			name: folderName,

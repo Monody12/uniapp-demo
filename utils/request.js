@@ -110,6 +110,30 @@ export const http = {
       method: 'POST',
       ...options
     });
+  },
+  patch: (url, data, options = {}) => {
+    return request({
+      url,
+      data,
+      method: 'PATCH',
+      ...options
+    });
+  },
+  put: (url, data, options = {}) => {
+    return request({
+      url,
+      data,
+      method: 'PUT',
+      ...options
+    });
+  },
+  delete: (url, data, options = {}) => {
+    return request({
+      url,
+      data,
+      method: 'DELETE',
+      ...options
+    });
   }
   // 可根据需要添加其他方法
 };
