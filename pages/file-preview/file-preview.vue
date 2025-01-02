@@ -1,5 +1,5 @@
 <template>
-	<view class="file-preview">
+	<view class="file-preview" :style="{height: `${containerHeight}`}">
 		<text selectable>{{decodeFileName}}</text>
 		<template v-if="displayType == 'Image'">
 			<!-- 图片预览 -->
@@ -10,7 +10,8 @@
 			<template v-if="videoMode == 'compatibility'">
 				<button v-on:click="videoMode = 'standard'" type="default">标准模式打开</button>
 				<video id="myVideo" class="preview-video" @error="videoErrorCallback" :title="decodeFileName" controls
-					:src="decodeUrl"></video>
+					:src="decodeUrl" ></video>
+				<!-- <view class="preview-video" style="background-color: aqua;"></view> -->
 			</template>
 			<template v-else>
 				<web-view :src="decodeUrl"></web-view>
@@ -29,7 +30,9 @@
 </template>
 
 <script>
-	import { getFileType } from '@/constants/config'
+	import {
+		getFileType
+	} from '@/constants/config'
 	export default {
 		name: 'FilePreview',
 		props: {
@@ -55,8 +58,11 @@
 				videoMode: "compatibility",
 				// 测试用视频URL
 				testVideo: "",
-				
+
 			}
+		},
+		mounted: function() {
+		  console.log('mounted', this.statusHeight)	
 		},
 		computed: {
 			// 解码后的URL
@@ -68,9 +74,22 @@
 			},
 			displayType() {
 				return getFileType(this.fileType)
+			},
+			// 状态栏高度
+			statusHeight() {
+				const systemInfo = uni.getSystemInfoSync();
+				// console.log('systemInfo', systemInfo)
+				return (systemInfo.statusBarHeight) + 44; // 默认值为10
+			},
+			// 如果为视频模式，需要播放器全屏
+			containerHeight() {
+				console.log("containerHeight", `calc(100vh - ${this.statusHeight}px)`)
+				if(this.displayType == 'Media') {
+					return `calc(100vh - ${this.statusHeight}px)`
+				}
+				return "auto"
 			}
 		},
-
 		methods: {
 			// 图片预览
 			previewImage() {
@@ -92,6 +111,7 @@
 <style scoped>
 	.file-preview {
 		width: 100%;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -100,17 +120,12 @@
 
 	.preview-image {
 		width: 100%;
-		height: 400rpx;
 	}
 
 	.preview-video {
-		width: 80vw;
-		height: 80vh;
-	}
-
-	.preview-audio {
+		/* 如果视频全屏会需要父容器高度计算占满整个屏幕的高度,但这样会使 */
+		flex: 1;
 		width: 100%;
-		margin: 20rpx 0;
 	}
 
 	.preview-document {
